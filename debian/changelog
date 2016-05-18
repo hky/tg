@@ -1,3 +1,10 @@
+telegram-cli (1.4.1-aht) unstable; urgency=low
+
+  * Upstream update version
+  * aht patch
+
+ -- hky <ballysta@gmail.com>  Wed, 18 May 2016 23:43:49 +0700
+
 telegram-cli (1.0.6-1) unstable; urgency=low
 
   * Upstream update version
