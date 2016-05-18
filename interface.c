@@ -2815,19 +2815,22 @@ void print_dialog_list_gw (struct tgl_state *TLSR, void *extra, int success, int
           UC = tgl_peer_get (TLS, peers[i]);
           mprintf (ev, "User ");
           print_user_name (ev, peers[i], UC);
-          mprintf (ev, ": %d unread\n", unread_count[i]);
+          mprintf (ev, ": %d unread", unread_count[i]);
+          mprintf (ev, ": last_msg_id: %s\n", print_permanent_msg_id(*last_msg_id[i]));
           break;
         case TGL_PEER_CHAT:
           UC = tgl_peer_get (TLS, peers[i]);
           mprintf (ev, "Chat ");
           print_chat_name (ev, peers[i], UC);
-          mprintf (ev, ": %d unread\n", unread_count[i]);
+          mprintf (ev, ": %d unread", unread_count[i]);
+          mprintf (ev, ": last_msg_id: %s\n", print_permanent_msg_id(*last_msg_id[i]));
           break;
         case TGL_PEER_CHANNEL:
           UC = tgl_peer_get (TLS, peers[i]);
           mprintf (ev, "Channel ");
           print_channel_name (ev, peers[i], UC);
-          mprintf (ev, ": %d unread\n", unread_count[i]);
+          mprintf (ev, ": %d unread", unread_count[i]);
+          mprintf (ev, ": last_msg_id: %s\n", print_permanent_msg_id(*last_msg_id[i]));
           break;
       }
     }
@@ -2838,6 +2841,8 @@ void print_dialog_list_gw (struct tgl_state *TLSR, void *extra, int success, int
       int i;
       for (i = size - 1; i >= 0; i--) {
         json_t *a = json_pack_peer (peers[i]);
+        assert (json_object_set(a, "unread", json_integer (unread_count[i])) >= 0);
+        assert (json_object_set (a, "last_msg_id", json_string (print_permanent_msg_id (*last_msg_id[i]))) >= 0);
         assert (json_array_append (res, a) >= 0);
       }
       char *s = json_dumps (res, 0);
@@ -4448,6 +4453,15 @@ void print_message (struct in_ev *ev, struct tgl_message *M) {
   }
   mpop_color (ev);
   assert (!color_stack_pos);
+  if (M->reply_markup) {
+    int total = M->reply_markup->row_start[M->reply_markup->rows];
+    mprintf(ev, " [reply_markup] %d ", total);
+    int idx = 0;
+    while (idx < total) {
+      mprintf(ev, "[%s]", M->reply_markup->buttons[idx]);
+      idx++;
+    }
+  }
   mprintf (ev, "\n");
   //print_end();
 }
